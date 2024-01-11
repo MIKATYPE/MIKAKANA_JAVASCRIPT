@@ -1,6 +1,7 @@
 ﻿/* **************************************************************************** */
-/* 美佳のタイプトレーナー カナ編 JAVASCRIPT版ソースコード Ver2.03.01            */
-/*                                     Copy right 今村二朗 2023/10/4            */
+/* 美佳のタイプトレーナー カナ編 JAVASCRIPT版ソースコード Ver2.03.01 2023/10/4  */
+/*                                                        Ver2.03.02 2024/1/17  */
+/*                                                Copy right 今村二朗           */
 /*                                                                              */
 /* このソースコードは 改変、転載、他ソフトの使用など自由にお使いください        */
 /*                                                                              */
@@ -130,7 +131,7 @@ MIKA_menu_kind_flag=0; /* =1 キーガイド表示あり =3 キーガイド表�
 MIKA_key_guide_on=1; /* 定数 キーガイド表示あり */
 MIKA_key_guide_off=3; /* 定数 キーガイド表示無し */
 MIKA_type_end_flag = 0; /* 練習終了フラグ =0 ESCによる終了 =1 60文字入力による終了 */
-MIKA_mes0="●●●  美佳のタイプトレーナー カナ編 Ver2.03.01  ●●●";
+MIKA_mes0="●●●  美佳のタイプトレーナー カナ編 Ver2.03.02  ●●●";
 MIKA_mes0a="●●●  美佳のタイプトレーナー カナ編 ポジション練習  ●●●";
 MIKA_mes0b="●●●  美佳のタイプトレーナー カナ編 ランダム練習  ●●●";
 MIKA_mesta="●●●  美佳タイプ カナ編 %s  ●●●";
@@ -1068,12 +1069,17 @@ window.onload = function() {
 }
 function keydownfunction(event) /* キーダウン処理 */
 {
+	var nChar;
 	const MIKAKANA = document.getElementById("MIKAKANA"); /* MIKAKANA キャンバス取得 */
  	if (MIKAKANA.getContext) { /* MIKAKANAのキャンバスが存在した場合 */
     	const g = MIKAKANA.getContext("2d"); /* 2次元描画 */
 		nChar=event.key; /* キーを取得 */
 		if(nChar=='Enter') nChar=0x0d; /* Enterキーが押されたときは文字記号を 0x0d に設定 */
 		else if(nChar=='Escape') nChar=0x1b; /* Ecsapeキーが押されたときは文字記号を 0x1b に設定 */
+		else if((nChar=='/')||(nChar=="'")) /* Firefoxにてショートカットキー / ' を無効にする */
+		{
+			if(event.cancelable) event.preventDefault(); /* ショートカットキーを無効化 */
+		}
 		if(nChar==0x0d||nChar==0x1b||nChar.length==1) /* 入力された文字がEnter かEscape か一文字の時に処理を実行 */
 		{
 			if(MIKA_exec_func_no>400) /* 練習画面表示中の場合 */
@@ -1350,7 +1356,7 @@ function cslellipse(g,x1,y1,x2,y2,color) /* 指の丸みを楕円で表示 */
 function cslkeyback(g,x_pos,y_pos,color) /* ポジション練習にてエラー文字とキーガイド文字の背景を塗りつぶす */
 {
 	var dx,dy;
-	dx=7;
+	dx=10;
 	dy=7;
 	cslrectt(g,x_pos+MIKA_width_x-dx,y_pos+MIKA_width_y-dy,x_pos+2*MIKA_width_x+dx,y_pos+3*MIKA_width_y+dy,color);
 }
@@ -2192,8 +2198,8 @@ function convertupperlower(a,b) /* b の文字の種別をa の文字種別に�
 {
 	var char1='A';
 	var char2='a';
-	if('A'<=a&&a<='Z'&&'a'<=b&&b<='z') b=String.fromCharCode(nChar.charCodeAt(0)-char2.charCodeAt(0)+char1.charCodeAt(0)); /* aが大文字でbが小文字の場合はbを大文字に変換 */
-	else	if('a'<=a&&a<='z'&&'A'<=b&&b<='Z') b=String.fromCharCode(nChar.charCodeAt(0)-char1.charCodeAt(0)+char2.charCodeAt(0)); /* aが小文字でbが大文字の場合はbを小文字に変換 */
+	if('A'<=a&&a<='Z'&&'a'<=b&&b<='z') b=String.fromCharCode(b.charCodeAt(0)-char2.charCodeAt(0)+char1.charCodeAt(0)); /* aが大文字でbが小文字の場合はbを大文字に変換 */
+	else	if('a'<=a&&a<='z'&&'A'<=b&&b<='Z') b=String.fromCharCode(b.charCodeAt(0)-char1.charCodeAt(0)+char2.charCodeAt(0)); /* aが小文字でbが大文字の場合はbを小文字に変換 */
 	return b;
 }
 function procptrain(g,nChar) /* ポジション練習の文字入力処理 */
@@ -2513,7 +2519,7 @@ function roundtime(time) /* 小数点以下 切り捨て */
 		time=Math.floor(time);
 		return time;
 	}
-function proctrain(g,nchar) /* ランダム練習 単語練習の文字入力処理 */
+function proctrain(g,nChar) /* ランダム練習 単語練習の文字入力処理 */
 {
 	if(nChar==0x1b){ /* エスケープキー入力の場合 */
 			if(MIKA_practice_end_flag==0) /* 入力練習実行中の場合 */
@@ -2572,8 +2578,6 @@ function proctrain(g,nchar) /* ランダム練習 単語練習の文字入力処
 						MIKA_practice_end_flag=1; /* 練習実行中フラグを終了にセット */
 						clearInterval(MIKA_Procrtimer);	 /* 制限時間60秒のタイマーをキャンセル */				
 						MIKA_type_count++; /* 入力文字正解数を加算 */
-						MIKA_utikiri_flag=1; /* 練習打ち切りフラグをセット */
-						MIKA_utikiri_flag2=0; /* 前回練習速度消去用にフラグをクリア */
 						if(MIKA_err_char_flag==1) /* 前回入力がエラーの場合 */
 						{
 							MIKA_err_char_flag=0; /* エラー入力フラグクリア */
@@ -2589,6 +2593,14 @@ function proctrain(g,nchar) /* ランダム練習 単語練習の文字入力処
 							MIKA_c_p1=0; /* 横座標をゼロに設定*/
 							MIKA_c_p2++; /* 縦座標をインクリメント */
 						}
+						if(MIKA_ttype_speed_time>MIKA_random_key_limit) /* 練習時間が制限時間を越した場合 */
+						{
+							MIKA_ttype_speed_time=MIKA_random_key_limit; /* 制限時間を練習時間に設定 */
+							MIKA_type_end_time=MIKA_type_start_time+MIKA_random_key_limit*1000.0; /* 終了時間を開始時間＋制限時間に設定 */
+						}
+						if(MIKA_ttype_speed_time<MIKA_random_key_limit) MIKA_utikiri_flag=1; /* 制限時間以内に打ち切った場合は練習打ち切りフラグをセット */
+						else MIKA_utikiri_flag=0;
+						MIKA_utikiri_flag2=0; /* 前回練習速度消去用にフラグをクリア */
 						procdispspeed(g); /* 入力速度を表示 */
 						MIKA_type_time_record[MIKA_type_kind_no]=MIKA_type_time_record[MIKA_type_kind_no]+roundtime(MIKA_ttype_speed_time); /* 累積練習時間の記録を加算 */
 						prockiroku(g); /* 記録を更新時の処理 */
